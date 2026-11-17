@@ -158,6 +158,7 @@ def _normalise_test(raw: dict) -> dict:
         "message": _to_str(raw.get("message")),
         "traceback": _to_str(raw.get("traceback")),
         "screenshot": _to_str(raw.get("screenshot")),
+        "failure_context": raw.get("failure_context") if isinstance(raw.get("failure_context"), dict) else None,
     }
 
 

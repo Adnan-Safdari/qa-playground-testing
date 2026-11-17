@@ -108,3 +108,11 @@ class TransferPage(AppPage):
 
     def is_success_shown(self) -> bool:
         return self.is_visible(self.SUCCESS)
+
+    # Review/confirm step required by the brief ("3. Confirm transfer") — not implemented yet (SB-KD-02).
+    CONFIRM_DIALOG = (By.ID, "transfer-confirm")
+
+    def wait_for_confirmation_or_receipt(self) -> str:
+        """After submit, wait for whichever appears first: 'confirm' dialog or 'receipt'."""
+        self._wait().until(lambda d: self.is_visible(self.CONFIRM_DIALOG) or self.is_success_shown())
+        return "confirm" if self.is_visible(self.CONFIRM_DIALOG) else "receipt"

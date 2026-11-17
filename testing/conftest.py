@@ -13,6 +13,7 @@ Environment variables (all optional):
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -109,6 +110,10 @@ def _chrome_options() -> ChromeOptions:
     options = ChromeOptions()
     if HEADLESS:
         options.add_argument("--headless=new")
+    elif sys.platform.startswith("linux"):
+        # Visible Chrome on GNOME/Wayland can abort reading GNOME font settings
+        # (GLib-GIO-ERROR: no key 'antialiasing'); running via XWayland avoids it.
+        options.add_argument(f"--ozone-platform={os.getenv('CHROME_OZONE_PLATFORM', 'x11')}")
     options.add_argument(f"--window-size={width},{height}")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -126,6 +131,7 @@ def _chrome_options() -> ChromeOptions:
             "intl.accept_languages": "en-US,en",
         },
     )
+    options.set_capability("goog:loggingPrefs", {"browser": "ALL"})  # console errors for bug reports
     if os.getenv("CHROME_BINARY"):
         options.binary_location = os.environ["CHROME_BINARY"]
     return options

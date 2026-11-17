@@ -34,7 +34,22 @@ def test_python() -> Path | None:
     return TEST_PYTHON if TEST_PYTHON.exists() else None
 
 
-def run_pytest(base_url: str) -> Iterator[str | int]:
+# Dashboard label -> pytest marker (see testing/pytest.ini).
+TEST_MODULES = {
+    "All tests": None,
+    "Open Application": "open_application",
+    "Create New Account": "create_account",
+    "Money Transfer": "transfer",
+    "Authentication": "authentication",
+    "Logout": "logout",
+    "Profile": "profile",
+    "Change Password": "change_password",
+    "Known Defects (expected to fail)": "known_defect",
+    "Critical only": "critical",
+}
+
+
+def run_pytest(base_url: str, headless: bool = True, marker: str | None = None) -> Iterator[str | int]:
     """Run the suite, yielding output lines; the final item is the exit code (int).
 
     The process is terminated if the consumer stops iterating early
@@ -43,9 +58,11 @@ def run_pytest(base_url: str) -> Iterator[str | int]:
     python = test_python()
     if python is None:
         raise FileNotFoundError(f"{TEST_PYTHON} not found. Create it with: {SETUP_HINT}")
-    env = {**os.environ, "BASE_URL": base_url.rstrip("/"), "HEADLESS": "1", "PYTHONUNBUFFERED": "1"}
+    env = {**os.environ, "BASE_URL": base_url.rstrip("/"), "HEADLESS": "1" if headless else "0",
+           "PYTHONUNBUFFERED": "1"}
+    args = [str(python), "-m", "pytest", "--color=no"] + (["-m", marker] if marker else [])
     proc = subprocess.Popen(
-        [str(python), "-m", "pytest", "--color=no"],
+        args,
         cwd=TESTING_DIR, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, bufsize=1,
     )

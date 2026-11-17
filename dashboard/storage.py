@@ -12,6 +12,7 @@ Paths:
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -69,7 +70,8 @@ CREATE TABLE IF NOT EXISTS test_results (
     duration_seconds  REAL,
     message           TEXT,
     traceback         TEXT,
-    screenshot        TEXT                     -- path relative to the run's artifact dir
+    screenshot        TEXT,                    -- path relative to the run's artifact dir
+    failure_context   TEXT                     -- JSON: url, page_title, console_errors, captured_at
 );
 
 CREATE INDEX IF NOT EXISTS idx_results_run ON test_results(run_id);
@@ -85,7 +87,7 @@ _RUN_COLUMNS = (
 )
 _TEST_COLUMNS = (
     "run_id", "seq", "tc_id", "title", "module", "priority", "nodeid", "outcome",
-    "duration_seconds", "message", "traceback", "screenshot",
+    "duration_seconds", "message", "traceback", "screenshot", "failure_context",
 )
 
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
@@ -140,6 +142,9 @@ class HistoryStore:
     def _init_schema(self) -> None:
         with self._connect() as conn:
             conn.executescript(_SCHEMA)
+            cols = {r["name"] for r in conn.execute("PRAGMA table_info(test_results)")}
+            if "failure_context" not in cols:  # DBs created before bug reports existed
+                conn.execute("ALTER TABLE test_results ADD COLUMN failure_context TEXT")
             conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     def run_dir(self, run_id: str) -> Path:
@@ -205,7 +210,10 @@ class HistoryStore:
                 f"INSERT INTO test_results ({', '.join(_TEST_COLUMNS)}) "
                 f"VALUES ({', '.join('?' for _ in _TEST_COLUMNS)})",
                 [
-                    [row["run_id"], i] + [t.get(c) for c in _TEST_COLUMNS[2:]]
+                    [row["run_id"], i] + [
+                        json.dumps(t[c]) if c == "failure_context" and isinstance(t.get(c), dict) else t.get(c)
+                        for c in _TEST_COLUMNS[2:]
+                    ]
                     for i, t in enumerate(tests)
                 ],
             )

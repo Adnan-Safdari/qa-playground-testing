@@ -101,12 +101,66 @@ def _short_message(report) -> str | None:
     return message if len(message) <= 1000 else message[:997] + "..."
 
 
+def _failure_context(driver, page_url: str) -> dict:
+    """Extra evidence for the bug report: where the browser was and what the console said."""
+    context = {"url": page_url, "page_title": None, "console_errors": [], "captured_at": iso(utc_now())}
+    try:
+        context["page_title"] = driver.title
+    except Exception:
+        pass
+    try:
+        context["console_errors"] = [
+            entry.get("message", "") for entry in driver.get_log("browser") if entry.get("level") == "SEVERE"
+        ][:20]
+    except Exception:  # logging capability unavailable
+        pass
+    return context
+
+
+def bug_report_markdown(test: dict, case: dict, run: dict) -> str:
+    """A tracker-ready bug report for one failed test."""
+    ctx = test.get("failure_context") or {}
+    severity = {"Critical": "S1 - Critical", "High": "S2 - Major", "Medium": "S3 - Moderate"}.get(
+        test["priority"], "S4 - Minor")
+    steps = "\n".join(f"{i}. {step}" for i, step in enumerate(case.get("steps") or [], 1)) or "_See test code._"
+    console = "\n".join(f"- `{m}`" for m in ctx.get("console_errors") or []) or "_None captured._"
+    commit = (run.get("commit_sha") or "unknown")[:7]
+    lines = [
+        f"# 🐞 BUG-{test['tc_id']}: {test['title']}",
+        "",
+        "| Field | Value |", "|---|---|",
+        f"| Test case | `{test['tc_id']}` ({test['nodeid']}) |",
+        f"| Module | {test['module']} |",
+        f"| Priority / Severity | {test['priority']} / {severity} |",
+        f"| Status | Open |",
+        f"| Detected | {ctx.get('captured_at') or run.get('finished_at')} |",
+        f"| Environment | {run.get('browser') or 'chrome'}{' (headless)' if run.get('headless') else ''} · {run.get('base_url')} |",
+        f"| Build | commit `{commit}` on `{run.get('branch') or 'unknown'}` · run `{run.get('run_id')}` |",
+        f"| Page at failure | {ctx.get('url') or 'n/a'} — \"{ctx.get('page_title') or ''}\" |",
+        "",
+        "## Summary", case.get("objective") or test["title"], "",
+        "## Preconditions", case.get("preconditions") or "—", "",
+        "## Test data", case.get("test_data") or "—", "",
+        "## Steps to reproduce", steps, "",
+        "## Expected result", case.get("expected_result") or "—", "",
+        "## Actual result", test.get("message") or "—", "",
+        "## Evidence",
+        f"![screenshot](../{test['screenshot']})" if test.get("screenshot") else "_No screenshot._", "",
+        "### Browser console errors", console, "",
+        "### Stack trace", "```", (test.get("traceback") or "").strip()[-6000:], "```", "",
+    ]
+    if run.get("workflow_run_url"):
+        lines += [f"CI run: {run['workflow_run_url']}", ""]
+    return "\n".join(lines)
+
+
 class ResultsPlugin:
     def __init__(self, config: pytest.Config, testing_dir: Path, reports_dir: Path, catalogue_path: Path):
         self.config = config
         self.testing_dir = testing_dir
         self.reports_dir = reports_dir
         self.screenshots_dir = reports_dir / "screenshots"
+        self.bug_reports_dir = reports_dir / "bug_reports"
         self.results_path = reports_dir / "results.json"
         self.catalogue = load_catalogue(catalogue_path)
         self.results: dict[str, dict] = {}
@@ -125,6 +179,9 @@ class ResultsPlugin:
         self.screenshots_dir.mkdir(parents=True, exist_ok=True)
         for old in self.screenshots_dir.glob("*.png"):
             old.unlink()
+        if self.bug_reports_dir.exists():
+            for old in self.bug_reports_dir.glob("*.md"):
+                old.unlink()
         if self.results_path.exists():
             self.results_path.unlink()
 
@@ -187,6 +244,7 @@ class ResultsPlugin:
             report.sections.append(("screenshot", f"Could not capture screenshot: {exc!r}"))
             return
         report.banktest_screenshot = f"screenshots/{name}"
+        report.banktest_context = _failure_context(driver, page_url)
 
         html = self.config.pluginmanager.getplugin("html")
         if html is not None:
@@ -206,11 +264,15 @@ class ResultsPlugin:
                 "message": None,
                 "traceback": None,
                 "screenshot": None,
+                "failure_context": None,
             }
         entry["duration_seconds"] += report.duration
         screenshot = getattr(report, "banktest_screenshot", None)
         if screenshot:
             entry["screenshot"] = screenshot
+        context = getattr(report, "banktest_context", None)
+        if context:
+            entry["failure_context"] = context
 
         if report.when == "setup":
             if report.skipped:
@@ -268,7 +330,7 @@ class ResultsPlugin:
         }
         ordered_keys = (
             "tc_id", "title", "module", "priority", "nodeid", "outcome",
-            "duration_seconds", "message", "traceback", "screenshot",
+            "duration_seconds", "message", "traceback", "screenshot", "failure_context",
         )
         payload = {
             "schema_version": SCHEMA_VERSION,
@@ -278,6 +340,16 @@ class ResultsPlugin:
         }
         self.reports_dir.mkdir(parents=True, exist_ok=True)
         self.results_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        self._write_bug_reports(run, tests)
+
+    def _write_bug_reports(self, run: dict, tests: list[dict]) -> None:
+        failing = [t for t in tests if t["outcome"] in ("failed", "error")]
+        if not failing:
+            return
+        self.bug_reports_dir.mkdir(parents=True, exist_ok=True)
+        for t in failing:
+            md = bug_report_markdown(t, self.catalogue.get(t["tc_id"], {}), run)
+            (self.bug_reports_dir / f"{t['tc_id']}.md").write_text(md, encoding="utf-8")
 
     def pytest_terminal_summary(self, terminalreporter, exitstatus, config):
         if getattr(self.config.option, "collectonly", False):

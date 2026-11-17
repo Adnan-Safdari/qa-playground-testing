@@ -46,10 +46,10 @@ def test_run_all_blocked_when_app_down(env, monkeypatch):
     monkeypatch.setenv("BASE_URL", "http://127.0.0.1:9")  # nothing listens here
     at = run_app()
     assert next(b for b in at.button if b.label == "Trigger CI run").disabled  # no token
-    next(b for b in at.button if b.label == "Run all tests").click().run()
+    next(b for b in at.button if b.label == "Run tests").click().run()
     assert not at.exception
     assert any("Start the app first" in e.value for e in at.error)
-    assert not next(b for b in at.button if b.label == "Run all tests").disabled
+    assert not next(b for b in at.button if b.label == "Run tests").disabled
 
 
 def test_renders_with_history(env, fixtures, monkeypatch):

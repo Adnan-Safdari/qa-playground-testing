@@ -48,6 +48,23 @@ class LoginPage(BasePage):
         self.submit_credentials(username, password)
         return self.wait_text_equals(self.LOGIN_ERROR, expected)
 
+    def wait_for_login_outcome(self, stale_error: str | None = None) -> str:
+        """After submit: 'dashboard' if the user got in, otherwise the `#login-error` text.
+
+        `stale_error`: an error still on screen from the previous attempt, ignored while waiting.
+        """
+
+        def settled(d):
+            if "/bank/dashboard" in d.current_url:
+                return True
+            try:  # the page may be navigating away mid-check
+                return self.is_visible(self.LOGIN_ERROR) and self.text_of(self.LOGIN_ERROR) != stale_error
+            except Exception:
+                return False
+
+        self._wait().until(settled)
+        return "dashboard" if "/bank/dashboard" in self.driver.current_url else self.text_of(self.LOGIN_ERROR)
+
     def message_text(self, locator, expected: str) -> str:
         return self.wait_text_equals(locator, expected)
 

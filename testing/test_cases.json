@@ -522,5 +522,77 @@
     "automated": true,
     "status": "Automated",
     "notes": ""
+  },
+  {
+    "tc_id": "SB-KD-01",
+    "module": "Known Defects",
+    "title": "Account locks after 3 failed logins",
+    "objective": "Verify brute-force protection: an account is locked after 3 consecutive wrong passwords.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "standard_user; wrong password x3, then the correct password bank_sauce",
+    "steps": [
+      "Open BASE_URL/bank/login.",
+      "Submit standard_user with a wrong password 3 times.",
+      "Submit standard_user with the correct password."
+    ],
+    "expected_result": "The 4th attempt is rejected with \"Your account has been locked. Please contact support.\" and the user stays on the login page.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Known defect: no lockout is implemented — the correct password still logs in."
+  },
+  {
+    "tc_id": "SB-KD-02",
+    "module": "Known Defects",
+    "title": "Transfer requires a confirmation step",
+    "objective": "Verify funds only move after the customer reviews and confirms the transfer (brief SB-TR-01 step 3 'Confirm transfer').",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). Logged in as standard_user.",
+    "test_data": "From 1002003001 to 1002003002, amount 250",
+    "steps": [
+      "Log in as standard_user and open BASE_URL/bank/transfer.",
+      "Select 1002003001, enter recipient 1002003002 and amount 250.",
+      "Click Transfer Funds."
+    ],
+    "expected_result": "A confirmation dialog (#transfer-confirm) summarising the transfer is shown; no money moves until it is confirmed.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Known defect: funds move immediately on submit."
+  },
+  {
+    "tc_id": "SB-KD-03",
+    "module": "Known Defects",
+    "title": "Account numbers are masked",
+    "objective": "Verify full account numbers are not displayed on screen (privacy / PCI-style masking).",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). Logged in as standard_user.",
+    "test_data": "Account 1002003001",
+    "steps": [
+      "Log in as standard_user.",
+      "Open BASE_URL/bank/accounts.",
+      "Read the account number shown on the 1002003001 card."
+    ],
+    "expected_result": "The number is masked, e.g. \"•••• 3001\".",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Known defect: the full 10-digit number is shown."
+  },
+  {
+    "tc_id": "SB-KD-04",
+    "module": "Known Defects",
+    "title": "Single-account label uses correct grammar",
+    "objective": "Verify the dashboard account-count label is grammatically correct for one account.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "New customer registered with a $1,000 deposit (one account)",
+    "steps": [
+      "Register a new customer (one account is created).",
+      "Open BASE_URL/bank/dashboard.",
+      "Read the Total Net Worth caption (#stat-account-count)."
+    ],
+    "expected_result": "The caption reads \"Across 1 account\".",
+    "priority": "Low",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Known defect: shows \"Across 1 accounts\"."
   }
 ]

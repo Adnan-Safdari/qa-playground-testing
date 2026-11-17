@@ -130,6 +130,7 @@ Written by the pytest suite on every run, in `testing/reports/` (git-ignored, up
 - `report.html` — pytest-html self-contained report
 - `results.json` — schema below
 - `screenshots/<tc_id>_<timestamp>.png` — one per failed test
+- `bug_reports/<tc_id>.md` — one Markdown bug report per failed test
 
 ```json
 {
@@ -160,7 +161,8 @@ Written by the pytest suite on every run, in `testing/reports/` (git-ignored, up
       "duration_seconds": 4.21,
       "message": "short failure message or null",
       "traceback": "full traceback or null",
-      "screenshot": "screenshots/SB-TR-01_20261117T120105Z.png or null"
+      "screenshot": "screenshots/SB-TR-01_20261117T120105Z.png or null",
+      "failure_context": {"url": "page URL at failure", "page_title": "…", "console_errors": ["SEVERE browser log lines"], "captured_at": "ISO UTC"}
     }
   ]
 }

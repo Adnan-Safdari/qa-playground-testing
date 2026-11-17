@@ -8,6 +8,7 @@ test-case catalogue (testing/test_cases.json). Nothing is hardcoded.
 from __future__ import annotations
 
 import html
+import json
 import os
 import time
 
@@ -216,12 +217,21 @@ def run_panel(settings: dict) -> None:
     with st.container(border=True):
         c = st.columns([3, 3, 2])
         with c[0]:
-            st.markdown("**Run all tests locally**")
-            st.caption(f"pytest + headless Chrome against `{settings['base_url']}`")
-            if st.button("Run all tests", type="primary", icon=":material/play_arrow:", disabled=running,
-                         key="run_local", width="stretch"):
+            st.markdown("**Run tests locally**")
+            module = st.selectbox("Tests", list(runner.TEST_MODULES), key="run_module", disabled=running,
+                                  label_visibility="collapsed")
+            b1, b2 = st.columns(2)
+            headless_click = b1.button("Run tests", type="primary", icon=":material/play_arrow:", disabled=running,
+                                       key="run_local", width="stretch", help="Headless Chrome (fast)")
+            gui_click = b2.button("Watch in browser", icon=":material/visibility:", disabled=running,
+                                  key="run_gui", width="stretch",
+                                  help="Opens a visible Chrome window for every test so you can watch it run")
+            if headless_click or gui_click:
                 st.session_state["run_requested"] = True
+                st.session_state["run_headless"] = bool(headless_click)
+                st.session_state["run_marker"] = runner.TEST_MODULES[module]
                 st.rerun()
+            st.caption(f"Against `{settings['base_url']}`")
         with c[1]:
             st.markdown("**Trigger CI run on GitHub**")
             st.caption(f"`{WORKFLOW_FILE}` on branch `{settings['branch']}`")
@@ -243,7 +253,8 @@ def run_panel(settings: dict) -> None:
 
         if running:
             try:
-                execute_local_run(settings["base_url"])
+                execute_local_run(settings["base_url"], st.session_state.get("run_headless", True),
+                                  st.session_state.get("run_marker"))
             finally:
                 st.session_state["run_requested"] = False
             refresh()
@@ -254,7 +265,7 @@ def run_panel(settings: dict) -> None:
                 st.code(log, language="text")
 
 
-def execute_local_run(base_url: str) -> None:
+def execute_local_run(base_url: str, headless: bool = True, marker: str | None = None) -> None:
     up, detail = runner.app_is_up(base_url)
     if not up:
         flash("error", f"App is not reachable ({detail}). Start the app first: `{runner.START_APP_HINT}`")
@@ -265,10 +276,12 @@ def execute_local_run(base_url: str) -> None:
 
     lines: list[str] = []
     code = None
-    with st.status("Running all tests…", expanded=True) as status:
+    mode = "headless" if headless else "visible browser"
+    scope = f"`-m {marker}`" if marker else "all tests"
+    with st.status(f"Running {scope} ({mode})…", expanded=True) as status:
         box = st.empty()
         last = 0.0
-        for item in runner.run_pytest(base_url):
+        for item in runner.run_pytest(base_url, headless=headless, marker=marker):
             if isinstance(item, int):
                 code = item
                 break
@@ -700,6 +713,110 @@ def history(runs: pd.DataFrame, all_results: pd.DataFrame) -> None:
         })
 
 
+# ------------------------------------------------------------- bug reports
+SEVERITY = {"Critical": "S1 · Critical", "High": "S2 · Major", "Medium": "S3 · Moderate", "Low": "S4 · Minor"}
+
+
+def _context(raw) -> dict:
+    if isinstance(raw, str) and raw:
+        try:
+            return json.loads(raw)
+        except ValueError:
+            return {}
+    return {}
+
+
+def bug_report_md(t: dict, case: dict, run: dict, ctx: dict) -> str:
+    steps = "\n".join(f"{i}. {s}" for i, s in enumerate(case.get("steps") or [], 1)) or "See test code."
+    console = "\n".join(f"- `{m}`" for m in ctx.get("console_errors") or []) or "None captured."
+    return "\n".join([
+        f"# BUG-{t['tc_id']}: {t['title']}", "",
+        f"- **Test case:** {t['tc_id']} ({t['nodeid']})",
+        f"- **Module:** {t['module']}",
+        f"- **Priority / Severity:** {t['priority']} / {SEVERITY.get(t['priority'], 'S4 · Minor')}",
+        "- **Status:** Open",
+        f"- **Environment:** {run.get('browser') or 'chrome'} · {run.get('base_url') or ''}",
+        f"- **Build:** commit {(run.get('commit_sha') or 'unknown')[:7]} on {run.get('branch') or 'unknown'} · run {run.get('run_id')}",
+        f"- **Page at failure:** {ctx.get('url') or 'n/a'}", "",
+        "## Preconditions", case.get("preconditions") or "—", "",
+        "## Test data", case.get("test_data") or "—", "",
+        "## Steps to reproduce", steps, "",
+        "## Expected result", case.get("expected_result") or "—", "",
+        "## Actual result", t.get("message") or "—", "",
+        "## Browser console errors", console, "",
+        "## Stack trace", "```", (t.get("traceback") or "").strip(), "```",
+    ])
+
+
+def bug_reports(runs: pd.DataFrame, cases: list[dict]) -> None:
+    if runs.empty:
+        st.info(EMPTY_STATE, icon=":material/info:")
+        return
+    options = runs["run_id"].tolist()
+    labels = {r["run_id"]: run_label(an.row_dict(r)) for _, r in runs.iterrows()}
+    run_id = st.selectbox("Run", options, format_func=lambda r: labels.get(r, r), key="bug_run")
+    run = store().get_run(run_id) or {}
+    results = load_results(str(store().db_path), run_id)
+    failing = by_priority(results[results["outcome"].isin(an.FAILING)])
+    if failing.empty:
+        st.success("No failures in this run — no bug reports.", icon=":material/check_circle:")
+        return
+    catalogue = {c.get("tc_id"): c for c in cases}
+
+    st.markdown(f"#### 📸 Failure screenshots ({len(failing)})")
+    cols = st.columns(4)
+    for i, (_, row) in enumerate(failing.iterrows()):
+        t = an.row_dict(row)
+        shot = store().artifact_path(run_id, t["screenshot"])
+        with cols[i % 4]:
+            if shot:
+                st.image(str(shot), caption=f"{t['tc_id']} — {t['title']}")
+            else:
+                st.caption(f"{t['tc_id']}: no screenshot")
+
+    st.markdown(f"#### 🐞 Bug reports ({len(failing)})")
+    for i, (_, row) in enumerate(failing.iterrows()):
+        t = an.row_dict(row)
+        case = catalogue.get(t["tc_id"], {})
+        ctx = _context(t.get("failure_context"))
+        icon = {"Critical": "🔴", "High": "🟠", "Medium": "🟡"}.get(t["priority"], "⚪")
+        with st.expander(f"BUG-{t['tc_id']} · {t['title']} · {icon} {t['priority']}", expanded=i == 0):
+            left, right = st.columns([3, 2])
+            with left:
+                st.markdown(
+                    f"| Field | Value |\n|---|---|\n"
+                    f"| Test case | `{t['tc_id']}` |\n"
+                    f"| Module | {t['module'] or '—'} |\n"
+                    f"| Priority / Severity | {t['priority']} / {SEVERITY.get(t['priority'], 'S4 · Minor')} |\n"
+                    f"| Status | 🔴 Open |\n"
+                    f"| Detected | {ctx.get('captured_at') or run.get('finished_at') or '—'} |\n"
+                    f"| Environment | {run.get('browser') or 'chrome'} · {run.get('base_url') or '—'} |\n"
+                    f"| Build | {commit_link(run)} · `{run.get('branch') or '—'}` |\n"
+                    f"| Page at failure | {ctx.get('url') or '—'} |\n"
+                )
+                st.markdown("**Steps to reproduce**")
+                st.markdown("\n".join(f"{n}. {s}" for n, s in enumerate(case.get("steps") or [], 1)) or "—")
+                st.markdown("**Expected result**")
+                st.success(case.get("expected_result") or "—")
+                st.markdown("**Actual result**")
+                st.error(t["message"] or "No failure message recorded.")
+                if case.get("preconditions") or case.get("test_data"):
+                    st.caption(f"Preconditions: {case.get('preconditions') or '—'}  \nTest data: {case.get('test_data') or '—'}")
+            with right:
+                shot = store().artifact_path(run_id, t["screenshot"])
+                if shot:
+                    st.image(str(shot), caption="Screenshot at failure")
+                errors = ctx.get("console_errors") or []
+                st.markdown(f"**Browser console errors:** {len(errors)}")
+                for m in errors:
+                    st.code(m, wrap_lines=True)
+            with st.expander("Stack trace"):
+                st.code(t["traceback"] or "—", language="python", wrap_lines=False)
+            st.download_button("Download bug report (.md)", data=bug_report_md(t, case, run, ctx),
+                               file_name=f"BUG-{t['tc_id']}.md", mime="text/markdown",
+                               key=f"bug-{run_id}-{t['seq']}")
+
+
 # ---------------------------------------------------------------------- main
 def main() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
@@ -718,14 +835,16 @@ def main() -> None:
         getattr(st, message[0])(message[1])
     run_panel(settings)
 
-    tabs = st.tabs(["Dashboard", "Test Management", "Execution Details", "History & Analytics"])
+    tabs = st.tabs(["Dashboard", "🐞 Bug Reports", "Test Management", "Execution Details", "History & Analytics"])
     with tabs[0]:
         command_center(runs, cases, all_results)
     with tabs[1]:
-        test_management(cases, catalogue_error, all_results)
+        bug_reports(runs, cases)
     with tabs[2]:
-        execution_details(runs)
+        test_management(cases, catalogue_error, all_results)
     with tabs[3]:
+        execution_details(runs)
+    with tabs[4]:
         history(runs, all_results)
 
 
