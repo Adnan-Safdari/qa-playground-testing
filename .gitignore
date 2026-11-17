@@ -34,12 +34,6 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-.vercel
-
-# turbo
-.turbo
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts

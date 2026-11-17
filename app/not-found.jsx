@@ -10,8 +10,8 @@ export default function NotFound() {
         Oops! The page you&apos;re looking for doesn&apos;t exist or has been
         moved.
       </p>
-      <Link href="/">
-        <Button>Return Home</Button>
+      <Link href="/bank">
+        <Button>Back to Bank Login</Button>
       </Link>
     </div>
   );
