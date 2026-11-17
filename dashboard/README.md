@@ -18,6 +18,19 @@ Tabs: **Overview** (latest run status, counts, pass rate, durations, quality gat
 **History & Analytics** (outcome and pass-rate trends, failures by module, frequently failing and
 flaky cases, duration trend).
 
+## Run tests from the dashboard
+
+The panel at the top of the page has two triggers:
+
+- **Run all tests** (local). It first checks that `<App base URL>/bank/login` responds. Set the URL in the
+  sidebar; the default is `$BASE_URL` or `http://localhost:3000`. If the app isn't up, start it with
+  `npm run build && npm start`. The button then runs `testing/.venv/bin/python -m pytest` in `testing/`
+  with `BASE_URL` and `HEADLESS=1` set, and streams the output into the page. When pytest finishes,
+  `testing/reports` is ingested automatically. The suite's venv must exist:
+  `cd testing && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
+- **Trigger CI run.** Sends a `workflow_dispatch` for `selenium-tests.yml` on the branch set in the sidebar.
+  It needs `GITHUB_TOKEN` with `actions: write`. When the run finishes, press **Sync from GitHub**.
+
 ## Ingest results
 
 Use the sidebar buttons, or the CLI:

@@ -18,7 +18,7 @@ TEXT_MUTED = "#52514e"
 
 
 def _layout(fig: go.Figure, height: int = 320, **kwargs) -> go.Figure:
-    fig.update_layout(
+    layout = dict(
         height=height,
         margin=dict(l=8, r=8, t=36, b=8),
         plot_bgcolor="rgba(0,0,0,0)",
@@ -26,8 +26,9 @@ def _layout(fig: go.Figure, height: int = 320, **kwargs) -> go.Figure:
         font=dict(size=12, color=TEXT_MUTED),
         hoverlabel=dict(bgcolor="white", font_size=12),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, title=None),
-        **kwargs,
     )
+    layout.update(kwargs)
+    fig.update_layout(**layout)
     fig.update_xaxes(showgrid=False, linecolor=GRID, ticks="")
     fig.update_yaxes(gridcolor=GRID, zeroline=False, linecolor=GRID)
     return fig
@@ -110,3 +111,17 @@ def run_test_durations(results: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(type="category", categoryorder="array", categoryarray=list(df["name"]), showgrid=False)
     fig.update_xaxes(title="Seconds", showgrid=True, gridcolor=GRID, rangemode="tozero")
     return _layout(fig, height=max(240, 60 + 22 * len(df)), bargap=0.3)
+
+
+def outcome_donut(run: dict) -> go.Figure:
+    """Outcome split of one run, pass rate in the centre."""
+    outcomes = [o for o in ("passed", "failed", "error", "skipped") if run.get(o)]
+    fig = go.Figure(go.Pie(
+        labels=[o.capitalize() for o in outcomes], values=[run[o] for o in outcomes], hole=0.64, sort=False,
+        marker=dict(colors=[OUTCOME_COLORS[o] for o in outcomes], line=dict(color="white", width=2)),
+        textinfo="value", textfont=dict(color="white", size=13),
+        hovertemplate="%{label}: %{value} (%{percent})<extra></extra>",
+    ))
+    fig.add_annotation(text=f"<b>{run.get('pass_rate', 0):.1f}%</b><br><span style='font-size:11px'>pass rate</span>",
+                       showarrow=False, font=dict(size=20, color="#1f1d2b"))
+    return _layout(fig, height=280, legend=dict(orientation="h", y=-0.05, x=0.5, xanchor="center"))

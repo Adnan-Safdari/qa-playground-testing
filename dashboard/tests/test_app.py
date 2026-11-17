@@ -39,7 +39,17 @@ def test_local_ingest_button_reports_missing_dir(env):
     at = run_app()
     next(b for b in at.sidebar.button if b.label == "Ingest local results").click().run()
     assert not at.exception
-    assert any("Local ingest failed" in e.value for e in at.sidebar.error)
+    assert any("Local ingest failed" in e.value for e in at.error)
+
+
+def test_run_all_blocked_when_app_down(env, monkeypatch):
+    monkeypatch.setenv("BASE_URL", "http://127.0.0.1:9")  # nothing listens here
+    at = run_app()
+    assert next(b for b in at.button if b.label == "Trigger CI run").disabled  # no token
+    next(b for b in at.button if b.label == "Run all tests").click().run()
+    assert not at.exception
+    assert any("Start the app first" in e.value for e in at.error)
+    assert not next(b for b in at.button if b.label == "Run all tests").disabled
 
 
 def test_renders_with_history(env, fixtures, monkeypatch):
@@ -48,8 +58,11 @@ def test_renders_with_history(env, fixtures, monkeypatch):
     ingest_reports_dir(store, fixtures / "reports_fail")
     monkeypatch.setenv("BANKTEST_CATALOGUE_PATH", str(fixtures / "test_cases.json"))
     at = run_app()
-    labels = {m.label: m.value for m in at.metric}
-    assert labels["Failed"] == "1" and labels["Pass rate"] == "60.00%" and labels["Blocked"] == "1"
+    page = " ".join(m.value for m in at.markdown)
+    assert "QA Command Center" in page and "FAILED" in page
+    assert "60.0%" in page and "QUALITY GATE FAILED" in page and "SB-TR-01" in page
+    labels = {m.label: m.value for m in at.metric}  # Execution Details defaults to the latest run
+    assert labels["Failed"] == "1" and labels["Critical failures"] == "1"
     # pick the older run in Execution Details and re-render
     at.selectbox[0].select_index(1).run()
     assert not at.exception
@@ -64,4 +77,5 @@ def test_renders_sparse_run(env):
     ingest_reports_dir(HistoryStore(env / "history.db"), reports)
     at = run_app()
     labels = {m.label: m.value for m in at.metric}
-    assert labels["Total"] == "2" and labels["Pass rate"] == "50.00%"
+    assert labels["Total"] == "2"
+    assert "50.0%" in " ".join(m.value for m in at.markdown)

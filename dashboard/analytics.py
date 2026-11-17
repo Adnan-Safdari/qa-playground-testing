@@ -32,6 +32,25 @@ def fmt_ts(value) -> str:
     return "—" if pd.isna(ts) else ts.strftime("%Y-%m-%d %H:%M UTC")
 
 
+def time_ago(value, now=None) -> str:
+    ts = pd.to_datetime(value, utc=True, errors="coerce")
+    if pd.isna(ts):
+        return "—"
+    now = now or pd.Timestamp.now(tz="UTC")
+    secs = max((now - ts).total_seconds(), 0)
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if secs >= size:
+            return f"{int(secs // size)}{unit} ago"
+    return "just now"
+
+
+PRIORITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+
+
+def priority_rank(value) -> int:
+    return PRIORITY_RANK.get(str(value).lower(), 9)
+
+
 def run_status(run) -> str:
     """PASSED / FAILED / NO TESTS for a runs row (dict or Series)."""
     if not run["total"]:
@@ -150,6 +169,9 @@ def failure_stats(results: pd.DataFrame) -> pd.DataFrame:
             "last_failure_at": fails["run_started_at"].iloc[-1],
             "last_message": fails["message"].iloc[-1],
         })
+    if not rows:  # tests ran but none ever failed
+        return pd.DataFrame(columns=["tc_id", "title", "module", "priority", "runs", "failures",
+                                     "failure_rate", "flips", "pattern", "last_failure_at", "last_message"])
     out = pd.DataFrame(rows)
     return out.sort_values(["failures", "failure_rate"], ascending=False).reset_index(drop=True)
 
