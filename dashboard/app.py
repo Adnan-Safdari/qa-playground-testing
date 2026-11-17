@@ -14,6 +14,7 @@ import time
 import pandas as pd
 import streamlit as st
 
+import envfile  # noqa: F401  (loads repo-root .env before anything reads os.environ)
 import analytics as an
 import charts
 import runner

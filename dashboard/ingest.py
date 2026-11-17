@@ -26,6 +26,7 @@ from typing import Callable
 
 import requests
 
+import envfile  # noqa: F401  (loads repo-root .env)
 from storage import HistoryStore
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

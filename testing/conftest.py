@@ -28,7 +28,23 @@ TESTING_DIR = Path(__file__).resolve().parent
 REPORTS_DIR = TESTING_DIR / "reports"
 CATALOGUE = TESTING_DIR / "test_cases.json"
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:3000").rstrip("/")
+
+def _load_dotenv(path: Path = TESTING_DIR.parent / ".env") -> None:
+    """Load the repo-root .env (if any); real environment variables win."""
+    if not path.is_file():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, value = line.split("=", 1)
+            value = value.strip().strip('"').strip("'")
+            if value and not os.environ.get(key.strip()):
+                os.environ[key.strip()] = value
+
+
+_load_dotenv()
+
+BASE_URL =os.getenv("BASE_URL", "http://localhost:3000").rstrip("/")
 HEADLESS = env_flag("HEADLESS", True)
 BROWSER = os.getenv("BROWSER", "chrome").strip().lower()
 PAGE_LOAD_TIMEOUT = float(os.getenv("PAGE_LOAD_TIMEOUT", "60"))
