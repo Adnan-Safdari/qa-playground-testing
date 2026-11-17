@@ -1,0 +1,526 @@
+[
+  {
+    "tc_id": "SB-OP-01",
+    "module": "Open Application",
+    "title": "Application loads successfully",
+    "objective": "Verify the SecureBank login page is served and renders.",
+    "preconditions": "SecureBank is running at BASE_URL.",
+    "test_data": "URL: BASE_URL/bank/login",
+    "steps": [
+      "Send an HTTP GET to BASE_URL/bank/login.",
+      "Open BASE_URL/bank/login in the browser.",
+      "Read the page title."
+    ],
+    "expected_result": "HTTP status is 200 and the page title is \"Sign in | SecureBank\" (contains \"SecureBank\").",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Status code checked with requests; title checked in Chrome."
+  },
+  {
+    "tc_id": "SB-OP-02",
+    "module": "Open Application",
+    "title": "Login page UI elements present",
+    "objective": "Verify the login form controls are usable.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "URL: BASE_URL/bank/login",
+    "steps": [
+      "Open BASE_URL/bank/login.",
+      "Locate the username field, password field and login button.",
+      "Check each is visible and enabled."
+    ],
+    "expected_result": "Username (#username), password (#password, masked) and login button (#login-button) are visible and enabled; the create-account link is shown.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-OP-03",
+    "module": "Open Application",
+    "title": "Invalid URL shows Page not found",
+    "objective": "Verify unknown routes return a proper 404 page.",
+    "preconditions": "SecureBank is running at BASE_URL.",
+    "test_data": "URL: BASE_URL/bank/invalid",
+    "steps": [
+      "Send an HTTP GET to BASE_URL/bank/invalid.",
+      "Open BASE_URL/bank/invalid in the browser."
+    ],
+    "expected_result": "HTTP status is 404; the page shows the heading \"Page not found\" and the title \"Page not found | SecureBank\".",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AC-01",
+    "module": "Create New Account",
+    "title": "Create account with valid details",
+    "objective": "Verify a new customer can register and gets a funded checking account.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "Full name: Rahul Kumar; Email: rahul.demo1@test.com; Password: Test@123; Initial deposit: 1000",
+    "steps": [
+      "Open BASE_URL/bank/register.",
+      "Enter the full name, email, password and initial deposit.",
+      "Click Create account (#register-button).",
+      "Note the new account number from the confirmation.",
+      "Open BASE_URL/bank/accounts."
+    ],
+    "expected_result": "\"Account created successfully\" confirmation with a 10-digit account number and balance $1,000.00; the user is logged in and /bank/accounts lists the new \"Everyday Checking\" account with balance $1,000.00 (data-cents 100000).",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": "The hackathon brief reused ID SB-OP-01 for this case; renumbered SB-AC-01."
+  },
+  {
+    "tc_id": "SB-AC-02",
+    "module": "Create New Account",
+    "title": "Mandatory field validation",
+    "objective": "Verify all registration fields are required.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "All fields left blank",
+    "steps": [
+      "Open BASE_URL/bank/register.",
+      "Leave every field blank.",
+      "Click Create account."
+    ],
+    "expected_result": "Errors shown: \"Full name is required.\", \"Email is required.\", \"Password is required.\", \"Initial deposit is required.\"; no account is created.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AC-03",
+    "module": "Create New Account",
+    "title": "Invalid email format",
+    "objective": "Verify registration rejects a malformed email.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "Full name: Rahul Kumar; Email: rahul@invalid; Password: Test@123; Initial deposit: 1000",
+    "steps": [
+      "Open BASE_URL/bank/register.",
+      "Fill the form using the invalid email.",
+      "Click Create account."
+    ],
+    "expected_result": "Email error \"Enter a valid email address.\" is shown; no account is created.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AC-04",
+    "module": "Create New Account",
+    "title": "Weak password rejected",
+    "objective": "Verify the password policy is enforced on registration.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "Full name: Rahul Kumar; Email: rahul.demo1@test.com; Password: 123; Initial deposit: 1000",
+    "steps": [
+      "Open BASE_URL/bank/register.",
+      "Fill the form using the weak password.",
+      "Click Create account."
+    ],
+    "expected_result": "Password error \"Password must be at least 8 characters.\" is shown; no account is created.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AC-05",
+    "module": "Create New Account",
+    "title": "Duplicate account rejected",
+    "objective": "Verify one email cannot be registered twice.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "Full name: Rahul Kumar; Email: rahul.demo1@test.com; Password: Test@123; Initial deposit: 1000 (used twice)",
+    "steps": [
+      "Register rahul.demo1@test.com successfully.",
+      "Log out.",
+      "Open BASE_URL/bank/register and submit the same details again."
+    ],
+    "expected_result": "Email error \"An account already exists with this email.\" is shown; no second account is created.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-01",
+    "module": "Money Transfer",
+    "title": "Successful money transfer",
+    "objective": "Verify a transfer moves money exactly between two customers.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). Acc-A and Acc-B are created in the test through registration, each with $5,000.00.",
+    "test_data": "Acc-A opening $5,000.00; Acc-B opening $5,000.00; amount 500",
+    "steps": [
+      "Register Acc-A and Acc-B (initial deposit 5000 each), logging out after each.",
+      "Log in as Acc-A and open BASE_URL/bank/transfer.",
+      "Select Acc-A as the from-account and check the available balance.",
+      "Enter Acc-B's account number and amount 500; submit.",
+      "Check the receipt and Acc-A's balance on /bank/accounts.",
+      "Log out, log in as Acc-B and check Acc-B's balance on /bank/accounts."
+    ],
+    "expected_result": "\"Transfer successful\" with a reference; Acc-A = $4,500.00 (data-cents 450000); Acc-B = $5,500.00 (data-cents 550000); combined total stays $10,000.00.",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Balances verified via data-cents attributes as well as the displayed text."
+  },
+  {
+    "tc_id": "SB-TR-02",
+    "module": "Money Transfer",
+    "title": "Insufficient balance",
+    "objective": "Verify a transfer larger than the available balance is rejected.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). Acc-A is created through registration with $500.00 and stays logged in.",
+    "test_data": "Acc-A opening $500.00; recipient 1002003001; amount 1000",
+    "steps": [
+      "Register Acc-A with initial deposit 500.",
+      "Open BASE_URL/bank/transfer.",
+      "Select Acc-A, enter recipient 1002003001 and amount 1000; submit."
+    ],
+    "expected_result": "Amount error \"Insufficient balance.\"; no transfer happens; Acc-A balance remains $500.00 (available balance and /bank/accounts).",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-03",
+    "module": "Money Transfer",
+    "title": "Invalid recipient account",
+    "objective": "Verify transfers to unknown accounts are rejected.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "From 1002003001; recipients \"Acc-XYZ\" and \"9999999999\"; amount 100",
+    "steps": [
+      "Open BASE_URL/bank/transfer.",
+      "Select 1002003001, enter recipient Acc-XYZ and amount 100; submit.",
+      "Repeat with recipient 9999999999."
+    ],
+    "expected_result": "Recipient error \"Recipient account not found.\" for both; no transfer happens; 1002003001 balance stays $12,450.00.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-04",
+    "module": "Money Transfer",
+    "title": "Zero amount rejected",
+    "objective": "Verify a zero amount cannot be transferred.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "From 1002003001 to 1002003002; amount 0",
+    "steps": [
+      "Open BASE_URL/bank/transfer.",
+      "Select 1002003001, enter recipient 1002003002 and amount 0; submit."
+    ],
+    "expected_result": "Amount error \"Amount must be greater than zero.\"; no transfer happens.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-05",
+    "module": "Money Transfer",
+    "title": "Negative amount rejected",
+    "objective": "Verify a negative amount cannot be transferred.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "From 1002003001 to 1002003002; amount -100",
+    "steps": [
+      "Open BASE_URL/bank/transfer.",
+      "Select 1002003001, enter recipient 1002003002 and amount -100; submit."
+    ],
+    "expected_result": "Amount error \"Enter a valid amount.\"; no transfer happens.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-06",
+    "module": "Money Transfer",
+    "title": "Mandatory transfer fields blank",
+    "objective": "Verify from-account, recipient and amount are required.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "All fields left blank",
+    "steps": [
+      "Open BASE_URL/bank/transfer.",
+      "Leave from-account unselected and recipient/amount empty.",
+      "Submit."
+    ],
+    "expected_result": "Errors shown: \"Select the account to transfer from.\", \"Recipient account number is required.\", \"Amount is required.\"; no transfer happens.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-07",
+    "module": "Money Transfer",
+    "title": "Transaction history updated after transfer",
+    "objective": "Verify a transfer is recorded for both sender and recipient.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). Acc-A and Acc-B are created through registration with $5,000.00 each.",
+    "test_data": "Acc-A -> Acc-B; amount 500",
+    "steps": [
+      "Transfer 500 from Acc-A to Acc-B and note the reference.",
+      "Open BASE_URL/bank/transactions as Acc-A and read the newest row.",
+      "Log out, log in as Acc-B, open BASE_URL/bank/transactions and read the newest row."
+    ],
+    "expected_result": "Acc-A's newest row: the transfer reference, description \"Transfer to <Acc-B number>\", category Transfer, amount -$500.00 (data-cents -50000). Acc-B's newest row: same reference, \"Transfer from <Acc-A number>\", amount +$500.00 (data-cents 50000).",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-08",
+    "module": "Money Transfer",
+    "title": "Frozen account transfer rejected",
+    "objective": "Verify customers with frozen accounts cannot move money.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as frozen_user / bank_sauce.",
+    "test_data": "From 1002005001 ($5,400.00) to 1002003001; amount 100",
+    "steps": [
+      "Open BASE_URL/bank/transfer and check the frozen notice.",
+      "Select 1002005001, enter recipient 1002003001 and amount 100; submit."
+    ],
+    "expected_result": "Frozen notice is shown; form error \"Your accounts are frozen. Transfers are disabled — please contact support.\"; balance stays $5,400.00.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AU-01",
+    "module": "Authentication",
+    "title": "Valid login",
+    "objective": "Verify a customer can log in with valid credentials.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "standard_user / bank_sauce",
+    "steps": [
+      "Open BASE_URL/bank/login.",
+      "Enter the username and password.",
+      "Click Sign in."
+    ],
+    "expected_result": "Redirected to /bank/dashboard (title \"Dashboard | SecureBank\") showing \"Welcome back, Alex\", username standard_user and \"Across 2 accounts\".",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AU-02",
+    "module": "Authentication",
+    "title": "Invalid password rejected",
+    "objective": "Verify a wrong password does not authenticate.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "standard_user / wrong_sauce",
+    "steps": [
+      "Open BASE_URL/bank/login.",
+      "Enter standard_user and a wrong password.",
+      "Click Sign in."
+    ],
+    "expected_result": "Error \"Invalid username or password.\"; the user stays on the login page.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AU-03",
+    "module": "Authentication",
+    "title": "Locked user rejected",
+    "objective": "Verify locked customers cannot log in.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "locked_user / bank_sauce",
+    "steps": [
+      "Open BASE_URL/bank/login.",
+      "Enter locked_user and bank_sauce.",
+      "Click Sign in."
+    ],
+    "expected_result": "Error \"Your account has been locked. Please contact support.\"; the user stays on the login page.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-AU-04",
+    "module": "Authentication",
+    "title": "Slow user dashboard loads",
+    "objective": "Verify the dashboard loads for a slow-loading account using explicit waits.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session).",
+    "test_data": "slow_user / bank_sauce",
+    "steps": [
+      "Open BASE_URL/bank/login and log in as slow_user.",
+      "Wait for the page loader (#page-loader) to disappear.",
+      "Check the dashboard content."
+    ],
+    "expected_result": "After the ~2.5 s loader disappears, the dashboard shows \"Welcome back, Taylor\", username slow_user and \"Across 2 accounts\".",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": "Uses explicit waits only (no fixed sleeps)."
+  },
+  {
+    "tc_id": "SB-LO-01",
+    "module": "Logout",
+    "title": "Logout shows confirmation",
+    "objective": "Verify a customer can log out.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "standard_user / bank_sauce",
+    "steps": [
+      "Log in as standard_user.",
+      "Click Log out (#logout-button)."
+    ],
+    "expected_result": "Redirected to /bank/login?reason=logged_out showing \"You have been logged out.\"",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-LO-02",
+    "module": "Logout",
+    "title": "Protected page blocked after logout",
+    "objective": "Verify the session is destroyed on logout.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "standard_user / bank_sauce; URL BASE_URL/bank/dashboard",
+    "steps": [
+      "Log in as standard_user.",
+      "Log out.",
+      "Open BASE_URL/bank/dashboard directly."
+    ],
+    "expected_result": "Redirected to /bank/login?reason=auth showing \"Please sign in to continue.\"; dashboard content is not shown.",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PR-01",
+    "module": "Profile",
+    "title": "Update profile with valid data",
+    "objective": "Verify a customer can update and persist profile details.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Full name: Alexandra Morgan-Reed; Email: alex.updated.<run>@test.com; Phone: 5550198765; Address: 221B Baker Street, Springfield",
+    "steps": [
+      "Open BASE_URL/bank/profile.",
+      "Replace full name, email, phone and address.",
+      "Click Save (#save-profile).",
+      "Reload the page."
+    ],
+    "expected_result": "\"Profile updated successfully.\"; the sidebar name changes to the new full name; all values persist after reload; the username is unchanged.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PR-02",
+    "module": "Profile",
+    "title": "Profile invalid email rejected",
+    "objective": "Verify the profile rejects a malformed email.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Email: alex@invalid",
+    "steps": [
+      "Open BASE_URL/bank/profile.",
+      "Replace the email with alex@invalid.",
+      "Click Save.",
+      "Reload the page."
+    ],
+    "expected_result": "Email error \"Enter a valid email address.\"; no success message; the stored email remains alex.morgan@example.com.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PR-03",
+    "module": "Profile",
+    "title": "Profile required fields blank",
+    "objective": "Verify required profile fields are enforced.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Full name, email and phone cleared",
+    "steps": [
+      "Open BASE_URL/bank/profile.",
+      "Clear full name, email and phone.",
+      "Click Save."
+    ],
+    "expected_result": "Errors shown: \"Full name is required.\", \"Email is required.\", \"Phone number is required.\"; nothing is saved.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PW-01",
+    "module": "Change Password",
+    "title": "Change password end to end",
+    "objective": "Verify a password change takes effect for subsequent logins.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Current: bank_sauce; New/confirm: NewSauce2026",
+    "steps": [
+      "Open BASE_URL/bank/change-password.",
+      "Enter current, new and confirm passwords; submit.",
+      "Log out.",
+      "Try to log in with the old password.",
+      "Log in with the new password."
+    ],
+    "expected_result": "\"Password changed successfully.\" and the fields are cleared; the old password is rejected with \"Invalid username or password.\"; the new password logs in to the dashboard.",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PW-02",
+    "module": "Change Password",
+    "title": "Wrong current password",
+    "objective": "Verify the current password must be correct.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Current: wrong_sauce; New/confirm: NewSauce2026",
+    "steps": [
+      "Open BASE_URL/bank/change-password.",
+      "Enter a wrong current password and a valid new password; submit."
+    ],
+    "expected_result": "Error \"Current password is incorrect.\"; the password is not changed.",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PW-03",
+    "module": "Change Password",
+    "title": "Password confirmation mismatch",
+    "objective": "Verify new password and confirmation must match.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Current: bank_sauce; New: NewSauce2026; Confirm: NewSauce2027",
+    "steps": [
+      "Open BASE_URL/bank/change-password.",
+      "Enter the values; submit."
+    ],
+    "expected_result": "Error \"Passwords do not match.\"; the password is not changed.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-PW-04",
+    "module": "Change Password",
+    "title": "Weak new password rejected",
+    "objective": "Verify the password policy applies to password changes.",
+    "preconditions": "SecureBank is running at BASE_URL; fresh browser profile (seeded demo data, no session). User is logged in as standard_user.",
+    "test_data": "Current: bank_sauce; New/confirm: abc",
+    "steps": [
+      "Open BASE_URL/bank/change-password.",
+      "Enter the values; submit.",
+      "Log out and log in with the original password."
+    ],
+    "expected_result": "Error \"Password must be at least 8 characters.\"; the original password still logs in.",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  }
+]

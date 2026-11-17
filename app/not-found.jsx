@@ -1,17 +1,19 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
+export const metadata = { title: "Page not found" };
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100vh] px-4 text-center">
-      <h1 className="text-6xl font-bold gradient-title mb-4">404</h1>
-      <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
-      <p className="text-gray-600 mb-8">
-        Oops! The page you&apos;re looking for doesn&apos;t exist or has been
-        moved.
-      </p>
-      <Link href="/bank">
-        <Button>Back to Bank Login</Button>
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center" data-testid="not-found">
+      <p className="text-6xl font-bold text-brand-600">404</p>
+      <h1 className="mt-4 text-2xl font-semibold">Page not found</h1>
+      <p className="mt-2 text-muted-foreground">The page you&apos;re looking for doesn&apos;t exist.</p>
+      <Link
+        href="/bank/login"
+        id="not-found-home-link"
+        className="mt-8 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+      >
+        Back to SecureBank
       </Link>
     </div>
   );

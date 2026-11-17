@@ -8,11 +8,21 @@ export default {
   ],
   theme: {
     extend: {
-      // Custom Breakpoints
-      screens: {
-        sxl: "84rem", // 1350px
-      },
       colors: {
+        // SecureBank brand violet
+        brand: {
+          50: "#f5f3ff",
+          100: "#ede9fe",
+          200: "#ddd6ff",
+          300: "#c4b4ff",
+          400: "#a684ff",
+          500: "#8e51ff",
+          600: "#7f22fe",
+          700: "#7008e7",
+          800: "#5d0ec0",
+          900: "#4d179a",
+          950: "#2f0d68",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -83,5 +93,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [require("tailwindcss-animate")],
 };

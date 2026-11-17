@@ -2,70 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Study Tracker — alternative font candidates (uncomment to activate) */
-/* --font-st-body: 'DM Sans', sans-serif;  */
-/* --font-st-mono: 'DM Mono', monospace;   */
-/* CDN import to pair with above: */
-/* @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap'); */
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --popover-foreground: 222 47% 11%;
+    --primary: 265 99% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 250 100% 97%;
+    --accent-foreground: 265 99% 46%;
+    --destructive: 347 77% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 265 99% 56%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 229 84% 5%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 262 100% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 263 50% 20%;
+    --accent-foreground: 255 100% 85%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 33% 17%;
+    --input: 217 33% 20%;
+    --ring: 262 100% 66%;
   }
 }
 
@@ -75,119 +55,6 @@ body {
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
-}
-
-/* Custome css */
-
-@layer utilities {
-  .gradient {
-    @apply bg-gradient-to-br from-blue-600 to-purple-600;
-  }
-
-  .gradient-sub {
-    @apply bg-gradient-to-br from-red-600 to-purple-600;
-  }
-
-  .gradient-title {
-    @apply gradient font-extrabold tracking-tighter pr-2 pb-2 text-transparent bg-clip-text;
-  }
-
-  .gradient-subTitle {
-    @apply gradient-sub font-extrabold tracking-tighter pr-2 pb-2 text-transparent bg-clip-text;
-  }
-
-  /* Auth pages — background gradient */
-  .auth-page-bg {
-    background: linear-gradient(135deg, #e8eeff 0%, #f3e8ff 40%, #e0f2fe 100%);
-    background-attachment: fixed;
-  }
-
-  /* Auth card — soft layered shadow with brand tint */
-  .auth-card-shadow {
-    box-shadow:
-      0 4px 6px -1px rgba(99, 102, 241, 0.08),
-      0 10px 30px -5px rgba(99, 102, 241, 0.12),
-      0 0 0 1px rgba(99, 102, 241, 0.05);
-  }
-}
-
-.dark .auth-page-bg {
-  background: linear-gradient(135deg, #080818 0%, #0d0420 50%, #080c18 100%);
-  background-attachment: fixed;
-}
-
-/* Bank login — animated gradient background (UI-12) */
-@keyframes bank-bg-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50%       { background-position: 100% 50%; }
-}
-
-.bank-login-bg {
-  background: linear-gradient(-45deg, #f3e8ff, #ede9fe, #dbeafe, #fce7f3, #f3e8ff);
-  background-size: 400% 400%;
-  animation: bank-bg-shift 12s ease infinite;
-}
-
-.dark .bank-login-bg {
-  background: linear-gradient(-45deg, #1a0638, #0c1435, #180d30, #1a0622, #1a0638);
-  background-size: 400% 400%;
-  animation: bank-bg-shift 12s ease infinite;
-}
-
-.dark .auth-card-shadow {
-  box-shadow:
-    0 4px 6px -1px rgba(99, 102, 241, 0.15),
-    0 10px 30px -5px rgba(99, 102, 241, 0.2),
-    0 0 0 1px rgba(139, 92, 246, 0.1);
-}
-
-.hero-image-wrapper {
-  perspective: 1000px;
-}
-
-.hero-image {
-  /* transform: rotateX(20deg) scale(0.9) translateY(-50); */
-  transform: rotateX(15deg) scale(1);
-  transition: transform 0.5s ease-out;
-  will-change: transform;
-}
-
-.hero-image.scrolled {
-  transform: rotateX(0deg) scale(1) translateY(40px);
-}
-
-.prose table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid #ddd;
-}
-
-.prose th,
-.prose td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.prose th {
-  background-color: #f4f4f5;
-  font-weight: bold;
-}
-
-.dark .prose th {
-  background-color: #333;
-}
-
-/* Bank App Specific Styles */
-body.bank-page header:not([id="main-navbar"]),
-body.bank-page footer:not([id="app-footer"]) {
-  display: none !important;
-}
-
-body.bank-page main {
-  padding: 0 !important;
-  max-width: 100% !important;
-  margin: 0 !important;
 }

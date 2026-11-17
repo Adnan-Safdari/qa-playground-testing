@@ -1,0 +1,82 @@
+[
+  {
+    "tc_id": "SB-LG-01",
+    "module": "Authentication",
+    "title": "Valid login",
+    "objective": "Verify a seeded user can sign in.",
+    "preconditions": "App running",
+    "test_data": "standard_user / bank_sauce",
+    "steps": [
+      "Open /bank/login",
+      "Enter credentials",
+      "Click Sign in"
+    ],
+    "expected_result": "Dashboard is shown",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-01",
+    "module": "Money Transfer",
+    "title": "Successful money transfer",
+    "objective": "Balances update.",
+    "preconditions": "Logged in",
+    "test_data": "500.00",
+    "steps": [
+      "Open transfer",
+      "Submit"
+    ],
+    "expected_result": "Sender -500, recipient +500",
+    "priority": "Critical",
+    "automated": true,
+    "status": "Automated",
+    "notes": ""
+  },
+  {
+    "tc_id": "SB-TR-02",
+    "module": "Money Transfer",
+    "title": "Reject zero amount",
+    "steps": "Enter 0",
+    "expected_result": "Error shown",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated"
+  },
+  {
+    "tc_id": "SB-LO-01",
+    "module": "Logout",
+    "title": "Logout clears session",
+    "steps": [],
+    "expected_result": "Redirect to login",
+    "priority": "High",
+    "automated": true,
+    "status": "Automated"
+  },
+  {
+    "tc_id": "SB-PR-01",
+    "module": "Profile",
+    "title": "Edit profile",
+    "steps": [],
+    "expected_result": "Saved",
+    "priority": "Medium",
+    "automated": true,
+    "status": "Automated"
+  },
+  {
+    "tc_id": "SB-OA-09",
+    "module": "Open Application",
+    "title": "Mobile layout",
+    "steps": [],
+    "expected_result": "n/a",
+    "priority": "Low",
+    "automated": false,
+    "status": "Blocked",
+    "notes": "No device lab"
+  },
+  "not-a-case",
+  {
+    "title": "missing id"
+  }
+]

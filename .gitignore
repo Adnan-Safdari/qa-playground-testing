@@ -43,3 +43,17 @@ next-env.d.ts
 
 /reports
 .gitnexus
+
+# python
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# test output (published as CI artifacts instead)
+testing/reports/
+
+# dashboard local history database
+dashboard/data/*.db
+dashboard/data/artifacts/

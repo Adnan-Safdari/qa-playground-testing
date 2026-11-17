@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "12345",
+    "started_at": "2026-11-11T09:00:00Z",
+    "finished_at": "2026-11-11T09:01:30Z",
+    "duration_seconds": 90.0,
+    "commit_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "branch": "demo/regression",
+    "workflow_run_id": "12345",
+    "workflow_run_url": "https://github.com/Adnan-Safdari/qa-playground-testing/actions/runs/12345",
+    "trigger": "pull_request",
+    "base_url": "http://localhost:3000",
+    "browser": "chrome 131.0",
+    "headless": true
+  },
+  "summary": {
+    "total": 5,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "error": 1,
+    "pass_rate": 60.0,
+    "critical_failed": 1
+  },
+  "tests": [
+    {
+      "tc_id": "SB-LG-01",
+      "title": "Valid login",
+      "module": "Authentication",
+      "priority": "Critical",
+      "nodeid": "tests/test_login.py::test_valid_login",
+      "outcome": "passed",
+      "duration_seconds": 2.0,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-TR-01",
+      "title": "Successful money transfer",
+      "module": "Money Transfer",
+      "priority": "Critical",
+      "nodeid": "tests/test_transfer.py::test_successful_transfer",
+      "outcome": "failed",
+      "duration_seconds": 7.25,
+      "message": "AssertionError: sender balance 1245000 != 1195000",
+      "traceback": "Traceback (most recent call last):\n  File \"tests/test_transfer.py\", line 42, in test_successful_transfer\n    assert sender == 1195000\nAssertionError: sender balance 1245000 != 1195000",
+      "screenshot": "screenshots/SB-TR-01_20261111T090045Z.png"
+    },
+    {
+      "tc_id": "SB-TR-02",
+      "title": "Reject zero amount",
+      "module": "Money Transfer",
+      "priority": "High",
+      "nodeid": "tests/test_transfer.py::test_zero_amount",
+      "outcome": "passed",
+      "duration_seconds": 1.5,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-LO-01",
+      "title": "Logout clears session",
+      "module": "Logout",
+      "priority": "High",
+      "nodeid": "tests/test_logout.py::test_logout",
+      "outcome": "error",
+      "duration_seconds": 0.5,
+      "message": "TimeoutException: #logout-button not clickable",
+      "traceback": "selenium.common.exceptions.TimeoutException",
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-PR-01",
+      "title": "Edit profile",
+      "module": "Profile",
+      "priority": "Medium",
+      "nodeid": "tests/test_profile.py::test_edit",
+      "outcome": "passed",
+      "duration_seconds": 4.0,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    }
+  ]
+}

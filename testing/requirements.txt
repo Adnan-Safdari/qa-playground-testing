@@ -1,0 +1,6 @@
+# BankTest — Selenium + Pytest regression suite (Python 3.12)
+selenium==4.52.0
+pytest==9.2.0
+pytest-html==4.2.0
+pytest-metadata==3.1.1
+requests==2.34.2

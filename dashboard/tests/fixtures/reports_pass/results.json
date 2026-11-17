@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "run": {
+    "run_id": "local-20261110T100000Z",
+    "started_at": "2026-11-10T10:00:00Z",
+    "finished_at": "2026-11-10T10:01:00Z",
+    "duration_seconds": 60.0,
+    "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "branch": "main",
+    "workflow_run_id": null,
+    "workflow_run_url": null,
+    "trigger": "local",
+    "base_url": "http://localhost:3000",
+    "browser": "chrome 131.0",
+    "headless": true
+  },
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 1,
+    "error": 0,
+    "pass_rate": 100.0,
+    "critical_failed": 0
+  },
+  "tests": [
+    {
+      "tc_id": "SB-LG-01",
+      "title": "Valid login",
+      "module": "Authentication",
+      "priority": "Critical",
+      "nodeid": "tests/test_login.py::test_valid_login",
+      "outcome": "passed",
+      "duration_seconds": 3.5,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-TR-01",
+      "title": "Successful money transfer",
+      "module": "Money Transfer",
+      "priority": "Critical",
+      "nodeid": "tests/test_transfer.py::test_successful_transfer",
+      "outcome": "passed",
+      "duration_seconds": 3.5,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-TR-02",
+      "title": "Reject zero amount",
+      "module": "Money Transfer",
+      "priority": "High",
+      "nodeid": "tests/test_transfer.py::test_zero_amount",
+      "outcome": "passed",
+      "duration_seconds": 3.5,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-LO-01",
+      "title": "Logout clears session",
+      "module": "Logout",
+      "priority": "High",
+      "nodeid": "tests/test_logout.py::test_logout",
+      "outcome": "passed",
+      "duration_seconds": 3.5,
+      "message": null,
+      "traceback": null,
+      "screenshot": null
+    },
+    {
+      "tc_id": "SB-PR-01",
+      "title": "Edit profile",
+      "module": "Profile",
+      "priority": "Medium",
+      "nodeid": "tests/test_profile.py::test_edit",
+      "outcome": "skipped",
+      "duration_seconds": 0.0,
+      "message": "Feature not implemented",
+      "traceback": null,
+      "screenshot": null
+    }
+  ]
+}
